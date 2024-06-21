@@ -119,7 +119,7 @@ def _controller_v1_handler(req: V1RequestBase) -> V1ResponseBase:
         logging.warning("Request parameter 'userAgent' was removed in FlareSolverr v2.")
 
     # set default values
-    if req.maxTimeout is None or req.maxTimeout < 1:
+    if req.maxTimeout is None or int(req.maxTimeout) < 1:
         req.maxTimeout = 60000
 
     # execute the command
@@ -220,7 +220,7 @@ def _cmd_sessions_destroy(req: V1RequestBase) -> V1ResponseBase:
 
 
 def _resolve_challenge(req: V1RequestBase, method: str) -> ChallengeResolutionT:
-    timeout = req.maxTimeout / 1000
+    timeout = int(req.maxTimeout) / 1000
     driver = None
     try:
         if req.session:
@@ -245,7 +245,8 @@ def _resolve_challenge(req: V1RequestBase, method: str) -> ChallengeResolutionT:
         raise Exception('Error solving the challenge. ' + str(e).replace('\n', '\\n'))
     finally:
         if not req.session and driver is not None:
-            driver.close()
+            if utils.PLATFORM_VERSION == "nt":
+                driver.close()
             driver.quit()
             logging.debug('A used instance of webdriver has been destroyed')
 
